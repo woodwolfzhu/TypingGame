@@ -5,6 +5,7 @@ public class TypingGUI{
     JFrame frame;
     JPanel jPanel;
     Graphics g;
+    JLabel label;
     JLabel backGroundLabel; // 背景图所在标签
     ImageIcon imageIcon;    // 背景图
     JButton newGameButton;  // 开始新游戏
@@ -14,10 +15,16 @@ public class TypingGUI{
         frame = new JFrame("Typing Game");
         newGameButton = new JButton("new game");
         loadTextButton =new JButton("load text");
+        label = new JLabel("Typing");
+        Font f = new Font("宋体",Font.BOLD,80);
+        label.setFont(f);
+        label.setForeground(Color.WHITE);
+        label.setBounds(170,100,280,200);
+        frame.add(label);
         setButton();    // 对主界面按钮进行设置
         frame.setLayout(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(640,800);
+        frame.setSize(600,800);
         frame.setLocation(500,200);
         g = frame.getGraphics();
         setBackGround();    // 设置主界面背景图
@@ -51,8 +58,8 @@ public class TypingGUI{
         newGameButton.setForeground(Color.WHITE);
         loadTextButton.setForeground(Color.WHITE);
 
-        newGameButton.setBounds(new Rectangle(220,450,200,80));
-        loadTextButton.setBounds(new Rectangle(220,550,200,80));
+        newGameButton.setBounds(new Rectangle(200,450,200,80));
+        loadTextButton.setBounds(new Rectangle(200,550,200,80));
         frame.add(newGameButton);
         frame.add(loadTextButton);
     }
