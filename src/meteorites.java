@@ -17,12 +17,8 @@ class Meteorites extends JPanel{
 
     Meteorites() {
         setSpeed();
-        g= this.getGraphics();
         this.setOpaque(false);   // 将面板设置为透明
-        this.add(imageLabel);
-        this.add(word);
-        initText();
-        dealText();
+        this.setVisible(true);
     }
 
 
@@ -39,14 +35,22 @@ class Meteorites extends JPanel{
         Random rd = new Random();
         x = rd.nextInt(600); // 陨石从最上面的随机位置出现
         y = 0;
-        tx = 1;
+
+        if(x-290>0 ){
+            tx = -1;
+        }else{
+            tx=1;
+        }
+//        tx = 1;
         ty = 1;
     }
 
     void setLocation() {  // 设置位置的移动
         imageLabel.setLocation(x, y);
         word.setLocation(x + 32, y + 32);
-        if (y != 290) {
+        int num=0;
+        num = 700/(x-290)+1;
+        if (x != 290&& y%num == 0) {
             x = x + tx;
         }
         y = y + ty;
@@ -70,12 +74,18 @@ class Meteorites extends JPanel{
         boolean flag = true;  // 控制线程进行
         Meteorites meteorites;
 
+
         public void run() {
-            while (true) {
-                setLocation();
-                if (meteorites.getBlood() == 0) { // 陨石血量为 0 ，或者飞船被撞毁，线程结束
-                    flag = false;
+            try {
+                while (true) {
+                    setLocation();
+//                if (meteorites.getBlood() == 0) { // 陨石血量为 0 ，或者飞船被撞毁，线程结束
+//                    flag = false;
+//                }
+                    sleep(15);
                 }
+            }catch(InterruptedException ie){
+                ie.printStackTrace();
             }
         }
     }
@@ -99,16 +109,21 @@ class Meteorites extends JPanel{
     void dealText(){
         text2 = text1.split("[^a-z]"); // 获得干净的单词
     }
+
+
 }
 
 
-class miniMeteorites extends Meteorites {
+class miniMeteorites extends Meteorites {   // 小型陨石
     miniMeteorites() {
+
         image = new ImageIcon("res/mine.png");
         imageLabel = new JLabel(image);
-        word = new JLabel();
-
-    }// 小型陨石
+        imageLabel.setSize(32,42);
+        this.add(imageLabel);
+        word = new JLabel("aa");
+        new PaintThread().start();
+    }
 }
 
 

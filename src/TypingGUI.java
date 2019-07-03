@@ -30,6 +30,7 @@ public class TypingGUI implements ActionListener{
         frame = new JFrame("Typing Game");
         wordNum =0;
 
+
         frame.setLayout(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 800);
@@ -88,11 +89,26 @@ public class TypingGUI implements ActionListener{
         frame.remove(newGameButton);
         frame.remove(loadTextButton);
         frame.remove(label);
+
+        miniMeteorites first = new miniMeteorites();
+        first.setSize(600,800);
+        frame.add(first);
+//        ImageIcon a = new ImageIcon("res/Snipaste_2019-03-17_09-45-02.png");
+//        JLabel imageLabel;
+//        imageLabel = new JLabel(a);
+//        imageLabel.setSize(302,400);
+//        imageLabel.setLocation(100,100);
+//        JPanel panel = new JPanel();
+//        panel.add(imageLabel);
+//        panel.setSize(600,800);
+//        panel.setVisible(true);
+//        frame.add(panel);
+//        frame.add(imageLabel);
         pauseButton.setBounds(20, 20, 18, 21);
         mshipLabel.setBounds(290, 700, 23, 297);
-
         frame.add(pauseButton);
-        frame.setVisible(true);
+        frame.repaint();
+
     }
 
     void pauseGUI() {    // 暂停时游戏画面
@@ -154,7 +170,7 @@ public class TypingGUI implements ActionListener{
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == newGameButton) {
             gamingGUI();
-            makeMeteorites();
+//            makeMeteorites();
         } else if (e.getSource() == loadTextButton) {
             loadText();
         } else if (e.getSource() == pauseButton) {
