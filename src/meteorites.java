@@ -3,32 +3,42 @@ import java.awt.*;
 import java.io.*;
 import java.util.Random;
 
-class Meteorites extends JPanel{
+class Meteorites extends JPanel {
     ImageIcon image;
     JLabel imageLabel;
-    JLabel word;
-    private int time; // 下降的速度
+    JLabel wordLabel;
+    int time; // 下降的速度
     private int x, y; // 陨石的坐标
     private int tx, ty; // 陨石出现的位置与飞船之间的坐标差，
     private int blood;  // 陨石的“血量”，大小与单词的长度一致，每击中一次减一
-    Graphics g;
-    String text1; // 游戏使用的文本文件
-    String[] text2; // 处理后的文本，去掉空格和各种标点
+    PaintThread paintThread;
 
-    Meteorites() {
-        setSpeed();
+    Meteorites() {   // 因为子类的构造函数会首先调用父类的构造函数，又涉及到路径问题，所以没办法在这里进行过多的操作子类需要
+        this.setSize(660, 880);
         this.setOpaque(false);   // 将面板设置为透明
-        this.setVisible(true);
+//        this.setVisible(true);
+
+        setSpeed();
+//        paintThread = new PaintThread();
+//        paintThread.start();
     }
 
+    void setImageLabel() {       // 设置图片标签
+        imageLabel = new JLabel(image);
+        imageLabel.setSize(image.getIconWidth(), image.getIconHeight());
+        imageLabel.setLocation(0, -80);      // 使陨石不至于马上出现在界面上
+        this.add(imageLabel);
+    }
 
-    void setWord(String word) {// 设置显示文字
-        this.word.setText(word);
-        Font f = getFont(20);
-        this.word.setFont(f);
-        this.word.setForeground(Color.WHITE);
-        this.word.setBackground(Color.BLACK);
-//        this.word.setOpaque(true); // 试试label的透明是什么效果
+    void setWordLabel() {// 设置文字标签
+        Font f = getFont(15);
+        this.add(this.wordLabel);
+        wordLabel.setLocation(0, -50);
+        this.wordLabel.setSize(80, 40);
+        this.wordLabel.setFont(f);
+        this.wordLabel.setForeground(Color.WHITE);
+        this.wordLabel.setBackground(Color.BLACK);
+//        this.wordLabel.setOpaque(true); // 试试label的透明是什么效果
     }
 
     void setSpeed() {// 设置下降速度
@@ -36,24 +46,26 @@ class Meteorites extends JPanel{
         x = rd.nextInt(600); // 陨石从最上面的随机位置出现
         y = 0;
 
-        if(x-290>0 ){
+        if (x - 290 > 0) {
             tx = -1;
-        }else{
-            tx=1;
+        } else {
+            tx = 1;
         }
-//        tx = 1;
         ty = 1;
     }
 
     void setLocation() {  // 设置位置的移动
         imageLabel.setLocation(x, y);
-        word.setLocation(x + 32, y + 32);
-        int num=0;
-        num = 700/(x-290)+1;
-        if (x != 290&& y%num == 0) {
+        wordLabel.setLocation(x + image.getIconWidth()-10 , y + image.getIconHeight()-20);
+        int num = 1;
+        if (x != 290) {
+            num = 600 / (x - 290);
+        }
+        if (x != 300 && y % num == 0) {
             x = x + tx;
         }
         y = y + ty;
+
     }
 
     void setBlood() {
@@ -72,73 +84,64 @@ class Meteorites extends JPanel{
 
     class PaintThread extends Thread {   // 1 个线程只能控制一个陨石
         boolean flag = true;  // 控制线程进行
-        Meteorites meteorites;
-
 
         public void run() {
             try {
-                while (true) {
+                sleep(1000 * time);     // 为了让陨石间隔一段时间出现
+                Meteorites.this.setVisible(true);
+                while (flag) {
                     setLocation();
 //                if (meteorites.getBlood() == 0) { // 陨石血量为 0 ，或者飞船被撞毁，线程结束
 //                    flag = false;
 //                }
+                    if (y == 800) {
+                        flag = false;
+                    }
                     sleep(15);
                 }
-            }catch(InterruptedException ie){
+            } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
         }
     }
-
-    void initText() {
-        try {
-            File f = new File("res/text.txt");
-            FileInputStream fis = new FileInputStream(f);
-            InputStreamReader isr = new InputStreamReader(fis);
-            BufferedReader br = new BufferedReader(isr);
-            String str = "";
-            while ((str = br.readLine()) != null) {
-                text1 = text1 + str;
-            }
-            dealText();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
-    void dealText(){
-        text2 = text1.split("[^a-z]"); // 获得干净的单词
-    }
-
-
 }
 
 
 class miniMeteorites extends Meteorites {   // 小型陨石
-    miniMeteorites() {
-
+    miniMeteorites(String word, int x) {
+        time = x;
         image = new ImageIcon("res/mine.png");
-        imageLabel = new JLabel(image);
-        imageLabel.setSize(32,42);
-        this.add(imageLabel);
-        word = new JLabel("aa");
+        setImageLabel();
+
+        this.wordLabel = new JLabel(word);
+        setWordLabel();
+
         new PaintThread().start();
     }
 }
 
-
-class midMeteorites extends Meteorites {
-    midMeteorites() {
+class midMeteorites extends Meteorites {    // 中型陨石
+    midMeteorites(String word, int x) {
+        time = x;
         image = new ImageIcon("res/destroyer.png");
-        imageLabel = new JLabel(image);
-        word = new JLabel();
-    }// 小型陨石
+        setImageLabel();
+
+        this.wordLabel = new JLabel(word);
+        setWordLabel();
+
+        new PaintThread().start();
+    }
 }
 
-class largMeteorites extends Meteorites {
-    largMeteorites() {
+class largMeteorites extends Meteorites {// 大型陨石
+    largMeteorites(String word, int x) {
+        time = x;
         image = new ImageIcon("res/oppressor.png");
-        imageLabel = new JLabel(image);
-        word = new JLabel();
-    }// 小型陨石
+        setImageLabel();
+
+        this.wordLabel = new JLabel(word);
+        setWordLabel();
+
+        new PaintThread().start();
+    }
 }

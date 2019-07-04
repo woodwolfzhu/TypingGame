@@ -2,8 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class TypingGUI implements ActionListener{
+public class TypingGUI implements ActionListener {
     JFrame frame;
     JPanel jPanel;
     Graphics g;
@@ -18,19 +21,20 @@ public class TypingGUI implements ActionListener{
     JButton resumeButton;         // 继续按钮
     JLabel mshipLabel;      // 主界面小飞船
     //    JLabel gshipLabel;      // 游戏界面飞船
+
     Meteorites[] min;     // 小陨石
     Meteorites[] mid;     // 中陨石
     Meteorites[] larg;     // 大陨石
+
     int checkPoint;             // 关卡
     int shipBlood;        // 飞船的血，暂时默认为 1；被撞后游戏结束
-    String[] text;        // 陨石上的单词
+
+    String text1;          // 未处理的文本
+    String[] text2;        // 从text1 中提取的单词，陨石上的单词
     int wordNum;          // 记录text中未使用的单词的位置
 
     TypingGUI() {
         frame = new JFrame("Typing Game");
-        wordNum =0;
-
-
         frame.setLayout(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 800);
@@ -43,6 +47,10 @@ public class TypingGUI implements ActionListener{
 //        gamingGUI();
         frame.setResizable(false);  // 禁止改变窗口大小
         frame.setVisible(true);
+
+        initText();
+        dealText();
+        wordNum = 0;
 
     }
 
@@ -62,7 +70,6 @@ public class TypingGUI implements ActionListener{
 //                System.out.println("存在a");
 //            }
 //            g.drawImage(im,0,0,null);
-
 
 
         label = new JLabel("Typing");       // 游戏大标题
@@ -90,20 +97,11 @@ public class TypingGUI implements ActionListener{
         frame.remove(loadTextButton);
         frame.remove(label);
 
-        miniMeteorites first = new miniMeteorites();
-        first.setSize(600,800);
-        frame.add(first);
-//        ImageIcon a = new ImageIcon("res/Snipaste_2019-03-17_09-45-02.png");
-//        JLabel imageLabel;
-//        imageLabel = new JLabel(a);
-//        imageLabel.setSize(302,400);
-//        imageLabel.setLocation(100,100);
-//        JPanel panel = new JPanel();
-//        panel.add(imageLabel);
-//        panel.setSize(600,800);
-//        panel.setVisible(true);
-//        frame.add(panel);
-//        frame.add(imageLabel);
+//        miniMeteorites min = new miniMeteorites("adf");
+//
+////            min.paintThread.start();
+//        frame.add(min);
+
         pauseButton.setBounds(20, 20, 18, 21);
         mshipLabel.setBounds(290, 700, 23, 297);
         frame.add(pauseButton);
@@ -112,6 +110,7 @@ public class TypingGUI implements ActionListener{
     }
 
     void pauseGUI() {    // 暂停时游戏画面
+        frame.remove(pauseButton);
         pauseLabel = new JLabel("休息一下。。。");
         pauseLabel.setFont(getFont(50));
         pauseLabel.setForeground(Color.WHITE);
@@ -129,7 +128,7 @@ public class TypingGUI implements ActionListener{
     }
 
 
-    void initButton(){
+    void initButton() {
 
         newGameButton = new JButton("new game");
         loadTextButton = new JButton("load text");
@@ -170,7 +169,9 @@ public class TypingGUI implements ActionListener{
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == newGameButton) {
             gamingGUI();
-//            makeMeteorites();
+            frame.repaint();
+            makeMeteorites();
+
         } else if (e.getSource() == loadTextButton) {
             loadText();
         } else if (e.getSource() == pauseButton) {
@@ -188,6 +189,45 @@ public class TypingGUI implements ActionListener{
 
     }
 
+    void initText() {
+        try {
+            File f = new File("res/text.txt");
+            FileInputStream fis = new FileInputStream(f);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            String str = "";
+            while ((str = br.readLine()) != null) {
+                text1 = text1 + str;
+            }
+            dealText();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
+    void dealText() {
+
+//        text2 = text1.split("[^a-zA-Z]"); // 获得干净的单词
+//        int i=0;
+//        for(i=0;i<text2.length;i++){
+//            if(text2[i].equals("")){
+//                text2[i]
+//            }
+//        }
+        String pattern = "[a-zA-Z]+('?[a-zA-Z])?";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(text1);
+        int x=0;
+        text2 = new String[1000];
+        while(m.find()){
+            if(m.group().length() != 1 && !m.group().equals("")) {
+                text2[x] = m.group();
+                x++;
+            }
+        }
+
+//        if(text2[])
+    }
 
 
     void makeMeteorites() {
@@ -208,28 +248,26 @@ public class TypingGUI implements ActionListener{
         this.larg = new largMeteorites[larg];
 
         int x;
+
+
         for (x = 0; x < min; x++) {
-            this.min[x] = new miniMeteorites();
-            this.min[x].setWord(text[wordNum%text.length]);
+            this.min[x] = new miniMeteorites(text2[wordNum], x);
             frame.add(this.min[x]);
             wordNum++;
         }
-        for (x = 0; x < mid; x++) {
-            this.mid[x] = new midMeteorites();
-            this.mid[x].setWord(text[wordNum%text.length]);
-            frame.add(this.mid[x].imageLabel);
-            wordNum++;
-        }
-        for (x = 0; x < larg; x++) {
-            this.larg[x] = new largMeteorites();
-            this.larg[x].setWord(text[wordNum%text.length]);
-            frame.add(this.larg[x]);
-            wordNum++;
-        }
-    }
 
-    void setText(String[] text){   // 给text 赋值
-        this.text = text;
+        for (x = 2; x < mid+2; x++) {
+            this.mid[x-2] = new midMeteorites(text2[wordNum],x);
+            frame.add(this.mid[x-2]);
+            wordNum++;
+        }
+
+
+        for (x = 5; x < larg+5; x++) {
+            this.larg[x-5] = new largMeteorites(text2[wordNum],x);
+            frame.add(this.larg[x-5]);
+            wordNum++;
+        }
     }
 
     JButton setButtonOpaque(JButton button) {    // 将按钮设置为只显示图片
