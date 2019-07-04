@@ -33,6 +33,7 @@ public class TypingGUI implements ActionListener {
     String[] text2;        // 从text1 中提取的单词，陨石上的单词
     int wordNum;          // 记录text中未使用的单词的位置
 
+
     TypingGUI() {
         frame = new JFrame("Typing Game");
         frame.setLayout(null);
@@ -43,11 +44,9 @@ public class TypingGUI implements ActionListener {
         shipBlood = 1;
         initButton();
         mainGUI();    // 设置主界面背景图
-//        pauseGUI();
-//        gamingGUI();
+
         frame.setResizable(false);  // 禁止改变窗口大小
         frame.setVisible(true);
-
         initText();
         dealText();
         wordNum = 0;
@@ -92,25 +91,18 @@ public class TypingGUI implements ActionListener {
     }
 
     void gamingGUI() {  // 游戏时的画面
-
         frame.remove(newGameButton);
         frame.remove(loadTextButton);
         frame.remove(label);
 
-//        miniMeteorites min = new miniMeteorites("adf");
-//
-////            min.paintThread.start();
-//        frame.add(min);
-
         pauseButton.setBounds(20, 20, 18, 21);
         mshipLabel.setBounds(290, 700, 23, 297);
         frame.add(pauseButton);
-        frame.repaint();
-
     }
 
     void pauseGUI() {    // 暂停时游戏画面
         frame.remove(pauseButton);
+
         pauseLabel = new JLabel("休息一下。。。");
         pauseLabel.setFont(getFont(50));
         pauseLabel.setForeground(Color.WHITE);
@@ -126,7 +118,6 @@ public class TypingGUI implements ActionListener {
 
     void endGUI() { // 结束画面
     }
-
 
     void initButton() {
 
@@ -176,11 +167,12 @@ public class TypingGUI implements ActionListener {
             loadText();
         } else if (e.getSource() == pauseButton) {
             pauseGUI();
+            waitAllThread();
         } else if (e.getSource() == resumeButton) {
-
             frame.remove(pauseLabel);
             frame.remove(resumeButton);
             gamingGUI();
+            notifyAllThread();
         }
         frame.repaint();
     }
@@ -232,7 +224,6 @@ public class TypingGUI implements ActionListener {
 
     void makeMeteorites() {
         int i = checkPoint;
-        int sum = 0;
         int min, mid, larg;
         mid = i / 3;   // 中型陨石每3关增加一个
         larg = i / 5;  // 大陨石每5关增加一个
@@ -241,15 +232,12 @@ public class TypingGUI implements ActionListener {
         } else {
             min = i + 3;
         }
-        sum = min + mid + larg;
 
         this.min = new miniMeteorites[min];
         this.mid = new midMeteorites[mid];
         this.larg = new largMeteorites[larg];
 
         int x;
-
-
         for (x = 0; x < min; x++) {
             this.min[x] = new miniMeteorites(text2[wordNum], x);
             frame.add(this.min[x]);
@@ -267,6 +255,31 @@ public class TypingGUI implements ActionListener {
             this.larg[x-5] = new largMeteorites(text2[wordNum],x);
             frame.add(this.larg[x-5]);
             wordNum++;
+        }
+    }
+
+    void waitAllThread(){
+        int x=0;
+        for(x=0;x<min.length;x++){
+            min[x].setWait();
+        }
+        for(x=0;x<mid.length;x++){
+            mid[x].setWait();
+        }
+        for(x=0;x<larg.length;x++){
+            larg[x].setWait();
+        }
+    }
+    void notifyAllThread(){
+        int x=0;
+        for(x=0;x<min.length;x++){
+            min[x].setNotify();
+        }
+        for(x=0;x<mid.length;x++){
+            mid[x].setNotify();
+        }
+        for(x=0;x<larg.length;x++){
+            larg[x].setNotify();
         }
     }
 
