@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
 import java.util.Random;
 
 class Meteorites extends JPanel {
@@ -9,10 +8,13 @@ class Meteorites extends JPanel {
     JLabel wordLabel;
     int time; // 下降的速度
     private int x, y; // 陨石的坐标
-    private int tx, ty; // 陨石出现的位置与飞船之间的坐标差，
+    private int tx, ty; // 控制陨石移动
+    private int num;    // 辅助位置移动
+
     private int blood;  // 陨石的“血量”，大小与单词的长度一致，每击中一次减一
     PaintThread paintThread;
     boolean waitFlag;           // 因为 wait()方法总会把主线程阻塞，所以使用 waitFlag 标志来控制run 方法的运行过程，达到原本wait的目的
+
 
     Meteorites() {   // 因为子类的构造函数会首先调用父类的构造函数，又涉及到路径问题，所以没办法在这里进行过多的操作子类需要
         waitFlag = false;
@@ -54,20 +56,25 @@ class Meteorites extends JPanel {
             tx = 1;
         }
         ty = 1;
+
+       if (x != 290) {
+            num = 700 / (x - 290) ;
+        }
     }
 
-    void setLocation() {  // 设置位置的移动
+    void setLocation1() {  // 设置位置的移动
         imageLabel.setLocation(x, y);
         wordLabel.setLocation(x + image.getIconWidth() - 10, y + image.getIconHeight() - 20);
-        int num = 1;
-        if (x != 290) {
-            num = 600 / (x - 290);
-        }
-        if (x != 300 && y % num == 0) {
+        if (x != 290 && y % num == 0) {
             x = x + tx;
         }
         y = y + ty;
 
+    }
+
+
+    void initBlood(String word){
+        blood = word.length();
     }
 
     void setBlood() {
@@ -78,30 +85,31 @@ class Meteorites extends JPanel {
         return blood;
     }
 
-    Font getFont(int x) {        // 获得字体大小为 x 的 font 对象
-        Font font = new Font("宋体", Font.BOLD, x);
-        return font;
+    int getLocationX(){
+        return x;
     }
-
-
+    int getLocationY(){
+        return y;
+    }
     class PaintThread extends Thread {   // 1 个线程只能控制一个陨石
         boolean flag = true;  // 控制线程进行
-
         public void run() {
             try {
-                sleep(1000 * time);     // 为了让陨石间隔一段时间出现
+                sleep(2000 * time);     // 为了让陨石间隔一段时间出现
                 Meteorites.this.setVisible(true);
                 while (flag) {
                     if (!waitFlag) {     // waitFlag 为false 时，线程正常运行，否则，不更新位置
-                        setLocation();
+                        setLocation1();
                     }
 //                if (meteorites.getBlood() == 0) { // 陨石血量为 0 ，或者飞船被撞毁，线程结束
 //                    flag = false;
 //                }
                     if (y == 800) {
+                        wordLabel.setForeground(Color.BLACK);
+                        imageLabel.setVisible(false);
                         flag = false;
                     }
-                    sleep(15);
+                    sleep(20);
                 }
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
@@ -112,10 +120,15 @@ class Meteorites extends JPanel {
     void setWait() {
         waitFlag = true;
     }
+
     void setNotify(){
         waitFlag = false;
     }
 
+    Font getFont(int x) {        // 获得字体大小为 x 的 font 对象
+        Font font = new Font("宋体", Font.BOLD, x);
+        return font;
+    }
 }
 
 
@@ -127,6 +140,8 @@ class miniMeteorites extends Meteorites {   // 小型陨石
 
         this.wordLabel = new JLabel(word);
         setWordLabel();
+
+        initBlood(word);
 
         paintThread = new PaintThread();
         paintThread.start();
@@ -142,6 +157,8 @@ class midMeteorites extends Meteorites {    // 中型陨石
         this.wordLabel = new JLabel(word);
         setWordLabel();
 
+        initBlood(word);
+
         paintThread = new PaintThread();
         paintThread.start();
     }
@@ -156,6 +173,8 @@ class largMeteorites extends Meteorites {// 大型陨石
 
         this.wordLabel = new JLabel(word);
         setWordLabel();
+
+        initBlood(word);
 
         paintThread = new PaintThread();
         paintThread.start();
